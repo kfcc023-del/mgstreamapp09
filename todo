@@ -1,0 +1,46 @@
+import os
+import tempfile
+import unittest
+
+from todo_app import TodoManager
+
+
+class TodoManagerTests(unittest.TestCase):
+    def test_add_and_list_tasks(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            storage_path = os.path.join(tmpdir, "todos.json")
+            manager = TodoManager(storage_path=storage_path)
+
+            manager.add_task("장보기")
+            manager.add_task("운동")
+
+            tasks = manager.list_tasks()
+            self.assertEqual(len(tasks), 2)
+            self.assertEqual(tasks[0]["title"], "장보기")
+            self.assertFalse(tasks[0]["done"])
+
+    def test_complete_and_delete_task(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            storage_path = os.path.join(tmpdir, "todos.json")
+            manager = TodoManager(storage_path=storage_path)
+
+            manager.add_task("청소")
+            manager.complete_task(1)
+
+            tasks = manager.list_tasks()
+            self.assertTrue(tasks[0]["done"])
+
+            manager.delete_task(1)
+            self.assertEqual(manager.list_tasks(), [])
+
+    def test_raise_for_empty_title(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            storage_path = os.path.join(tmpdir, "todos.json")
+            manager = TodoManager(storage_path=storage_path)
+
+            with self.assertRaises(ValueError):
+                manager.add_task("   ")
+
+
+if __name__ == "__main__":
+    unittest.main()
